@@ -4,13 +4,10 @@ include "config/cors.php";
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
-/* heq query string */
 $uri = strtok($uri, '?');
 
-/* heq base folder */
 $uri = str_replace("/sistem-vleresimi-produktesh-php/api", "", $uri);
 
-/* normalizim */
 $uri = rtrim($uri, "/");
 
 if ($uri == "" || $uri == "/") {

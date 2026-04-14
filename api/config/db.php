@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db   = "review_system";
+$db   = "sistem_vleresimi_produktesh";
 
 $conn = new mysqli($host, $user, $pass, $db);
 
