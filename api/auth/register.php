@@ -52,13 +52,7 @@ if ($stmt->execute()) {
     http_response_code(201);
     echo json_encode([
         "message" => "User registered successfully",
-        "user" => [
-            "user_id" => $user_id,
-            "first_name" => $first_name,
-            "last_name" => $last_name,
-            "email" => $email,
-            "role" => "user"
-        ]
+        
     ]);
 
 } else {

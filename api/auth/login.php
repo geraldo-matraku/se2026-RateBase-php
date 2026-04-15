@@ -35,11 +35,5 @@ $_SESSION['role'] = $user['role'];
 http_response_code(200);
 echo json_encode([
     "message" => "Login success",
-    "user" => [
-        "user_id" => $user['user_id'],
-        "first_name" => $user['first_name'],
-        "last_name" => $user['last_name'],
-        "email" => $user['email'],
-        "role" => $user['role']
-    ]
+   
 ]);
