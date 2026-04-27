@@ -24,9 +24,57 @@ if (preg_match('/^\/products\/getByCategory\/(\d+)$/', $uri, $matches)) {
     exit;
 }
 
+// Dynamic product routes:
+// GET /products/{id}
+// PUT /products/{id}
+// DELETE /products/{id}
+if (preg_match('/^\/products\/(\d+)$/', $uri, $matches)) {
+    $_GET['productId'] = $matches[1];
+
+    if ($method === "GET") {
+        require 'products/getById.php';
+        exit;
+    }
+
+    if ($method === "PUT") {
+        require 'products/update.php';
+        exit;
+    }
+
+    if ($method === "DELETE") {
+        require 'products/delete.php';
+        exit;
+    }
+
+    http_response_code(405);
+    echo json_encode(["status" => "error", "message" => "Method not allowed"]);
+    exit;
+}
+
+// Dynamic category routes:
+// GET /categories/{id}
+// PUT /categories/{id}
+// DELETE /categories/{id}
 if (preg_match('/^\/categories\/(\d+)$/', $uri, $matches)) {
     $_GET['categoryId'] = $matches[1];
-    require 'categories/getOne.php';
+
+    if ($method === "GET") {
+        require 'categories/getOne.php';
+        exit;
+    }
+
+    if ($method === "PUT") {
+        require 'categories/update.php';
+        exit;
+    }
+
+    if ($method === "DELETE") {
+        require 'categories/delete.php';
+        exit;
+    }
+
+    http_response_code(405);
+    echo json_encode(["status" => "error", "message" => "Method not allowed"]);
     exit;
 }
 
@@ -52,6 +100,29 @@ switch ($uri) {
     case '/categories':
     case '/categories/getAll':
         require 'categories/getAll.php';
+        break;
+
+    case '/products':
+    case '/products/getAll':
+        require "products/getAll.php";
+        break;
+
+    case '/products/create':
+        if ($method !== "POST") {
+            http_response_code(405);
+            echo json_encode(["status" => "error", "message" => "Method not allowed"]);
+            break;
+        }
+        require "products/create.php";
+        break;
+
+    case '/categories/create':
+        if ($method !== "POST") {
+            http_response_code(405);
+            echo json_encode(["status" => "error", "message" => "Method not allowed"]);
+            break;
+        }
+        require "categories/create.php";
         break;
 
     default:
