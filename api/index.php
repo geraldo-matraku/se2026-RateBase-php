@@ -127,6 +127,10 @@ switch ($uri) {
         require "categories/create.php";
         break;
 
+    case '/stats':
+        require "stats/getStats.php";
+        break;    
+
     default:
         http_response_code(404);
         echo json_encode([
