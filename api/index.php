@@ -1,6 +1,9 @@
 <?php
 include "config/cors.php";
 
+header("Content-Type: application/json");
+
+
 $uri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -63,7 +66,7 @@ if (preg_match('/^\/categories\/(\d+)$/', $uri, $matches)) {
         exit;
     }
 
-    if ($method === "PUT") {
+    if ($method === "PUT" || $method === "POST") {
         require 'categories/update.php';
         exit;
     }
@@ -78,7 +81,6 @@ if (preg_match('/^\/categories\/(\d+)$/', $uri, $matches)) {
     exit;
 }
 
-header("Content-Type: application/json");
 
 switch ($uri) {
     case '/auth/login':

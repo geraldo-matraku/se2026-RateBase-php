@@ -4,7 +4,6 @@ include __DIR__ . "/../config/db.php";
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
 if ($q !== '') {
-
     $search = "%" . $q . "%";
 
     $sql = "
@@ -12,6 +11,7 @@ if ($q !== '') {
             c.category_id,
             c.name,
             c.description,
+            c.image, -- E SHTUAM KETU
             COUNT(p.product_id) AS total_products
         FROM categories c
         LEFT JOIN products p ON p.category_id = c.category_id
@@ -23,12 +23,12 @@ if ($q !== '') {
     $stmt->bind_param("ss", $search, $search);
 
 } else {
-
     $sql = "
         SELECT 
             c.category_id,
             c.name,
             c.description,
+            c.image, -- Ketu e kishe, tani jane njesoj
             COUNT(p.product_id) AS total_products
         FROM categories c
         LEFT JOIN products p ON p.category_id = c.category_id
@@ -45,12 +45,13 @@ $data = [];
 
 while ($row = $result->fetch_assoc()) {
     $row['total_products'] = (int)$row['total_products'];
+    $row['image'] = $row['image'] ? $row['image'] : null;
     $data[] = $row;
 }
 
-// total categories
 $totalCategories = count($data);
 
+header('Content-Type: application/json'); 
 echo json_encode([
     "status" => "success",
     "data" => $data,

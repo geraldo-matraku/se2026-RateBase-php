@@ -12,6 +12,7 @@ $last_name  = $data['last_name'] ?? '';
 $email      = $data['email'] ?? '';
 $password   = $data['password'] ?? '';
 
+
 if (!$first_name || !$last_name || !$email || !$password) {
     http_response_code(400);
     echo json_encode([
