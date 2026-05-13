@@ -19,6 +19,7 @@ $stmt = $conn->prepare("
         p.name,
         p.description,
         p.category_id,
+        p.image,
         c.name AS category_name
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.category_id
