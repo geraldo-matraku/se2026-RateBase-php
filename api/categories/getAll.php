@@ -11,7 +11,7 @@ if ($q !== '') {
             c.category_id,
             c.name,
             c.description,
-            c.image, -- E SHTUAM KETU
+            c.image,
             COUNT(p.product_id) AS total_products
         FROM categories c
         LEFT JOIN products p ON p.category_id = c.category_id
@@ -28,7 +28,7 @@ if ($q !== '') {
             c.category_id,
             c.name,
             c.description,
-            c.image, -- Ketu e kishe, tani jane njesoj
+            c.image, 
             COUNT(p.product_id) AS total_products
         FROM categories c
         LEFT JOIN products p ON p.category_id = c.category_id

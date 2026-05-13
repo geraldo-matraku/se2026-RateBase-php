@@ -1,4 +1,5 @@
 <?php
+include __DIR__ . "/../config/cors.php";
 header("Content-Type: application/json; charset=UTF-8");
 include __DIR__ . "/../config/db.php";
 
