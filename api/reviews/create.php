@@ -3,10 +3,10 @@ include __DIR__ . "/../config/cors.php";
 include __DIR__ . "/../config/session.php";
 include __DIR__ . "/../config/db.php";
 
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=UTF-8");
 
 $data = json_decode(file_get_contents("php://input"), true);
-/*
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode([
@@ -14,9 +14,9 @@ if (!isset($_SESSION['user_id'])) {
     ]);
     exit;
 }
-*/
+
 $product_id = $data['product_id']  ?? null;
-$user_id= $_SESSION['user_id'] ?? 1;
+$user_id= $_SESSION['user_id'];
 $rating = $data['rating']  ?? null;
 $comment = $data['comment']  ?? null;
 $image = $data['image'] ?? null;

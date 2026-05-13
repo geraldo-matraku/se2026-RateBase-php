@@ -3,6 +3,22 @@ include __DIR__ . "/../config/cors.php";
 include __DIR__ . "/../config/session.php";
 include __DIR__ . "/../config/db.php";
 
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode([
+        "message" => "Unauthorized"
+    ]);
+    exit;
+}
+
+if($_SESSION['role'] !== 'admin'){
+    http_response_code(403);
+     echo json_encode([
+    "message" => "Admin Only"
+]);
+exit;
+}
+
 header("Content-Type: application/json");
 
 mysqli_report(MYSQLI_REPORT_OFF);

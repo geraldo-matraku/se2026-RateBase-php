@@ -4,7 +4,6 @@ header("Content-Type: application/json; charset=UTF-8");
 include __DIR__ . "/../config/session.php";
 include __DIR__ . "/../config/db.php";
 
-// ✅ kontrollo login
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode([
@@ -14,7 +13,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// ✅ merr user_id nga session
 $userId = $_SESSION['user_id'];
 
 try {
