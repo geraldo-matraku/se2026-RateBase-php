@@ -39,7 +39,7 @@ if (preg_match('/^\/products\/(\d+)$/', $uri, $matches)) {
         exit;
     }
 
-    if ($method === "PUT") {
+    if ($method === "PUT" || $method === "POST") {
         require 'products/update.php';
         exit;
     }
