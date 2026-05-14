@@ -66,6 +66,7 @@ if ($stmt->execute()) {
         "category" => [
             "id" => $conn->insert_id,
             "name" => $name,
+            "description" => $description,
             "image" => $image_name
         ]
     ]);
