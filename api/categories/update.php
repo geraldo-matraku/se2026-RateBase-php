@@ -1,62 +1,156 @@
 <?php
+
 include __DIR__ . "/../config/db.php";
 include __DIR__ . "/../config/session.php";
+
 header("Content-Type: application/json");
 
 
 if (!isset($_SESSION['user_id'])) {
+
     http_response_code(401);
+
     echo json_encode([
         "message" => "Unauthorized"
     ]);
+
     exit;
 }
 
-if($_SESSION['role'] !== 'admin'){
+if ($_SESSION['role'] !== 'admin') {
+
     http_response_code(403);
-     echo json_encode([
-    "message" => "Admin Only"
-]);
-exit;
+
+    echo json_encode([
+        "message" => "Admin Only"
+    ]);
+
+    exit;
 }
-// 1. Marrim ID-në nga URL (e kalon Router-i te $_GET)
+
+
+
 $category_id = $_GET['categoryId'] ?? 0;
 
 if (!$category_id) {
+
     http_response_code(400);
-    echo json_encode(["message" => "Category ID is missing"]);
+
+    echo json_encode([
+        "message" => "Category ID is missing"
+    ]);
+
     exit;
 }
 
-// 2. Kontrollojmë nëse ka ardhur skedari i fotos
-if (!isset($_FILES['image']) || $_FILES['image']['error'] !== 0) {
-    http_response_code(400);
-    echo json_encode(["message" => "No image file uploaded"]);
+
+
+$checkStmt = $conn->prepare("
+    SELECT * FROM categories 
+    WHERE category_id = ?
+");
+
+$checkStmt->bind_param("i", $category_id);
+$checkStmt->execute();
+
+$result = $checkStmt->get_result();
+
+if ($result->num_rows === 0) {
+
+    http_response_code(404);
+
+    echo json_encode([
+        "message" => "Category not found"
+    ]);
+
     exit;
 }
 
-// 3. Logjika e ruajtjes së skedarit fizik
-$target_dir = "../uploads/";
-$file_extension = strtolower(pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION));
-$new_file_name = "cat_" . uniqid() . "." . $file_extension;
-$target_file = $target_dir . $new_file_name;
+$currentCategory = $result->fetch_assoc();
 
-if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-    
-    // 4. Update vetëm kolonën 'image' në DB për këtë ID
-    $stmt = $conn->prepare("UPDATE categories SET image = ? WHERE category_id = ?");
-    $stmt->bind_param("si", $new_file_name, $category_id);
 
-    if ($stmt->execute()) {
-        echo json_encode([
-            "message" => "Image updated successfully",
-            "image" => $new_file_name
-        ]);
+
+$name = $_POST['name'] ?? $currentCategory['name'];
+
+$description = $_POST['description'] ?? $currentCategory['description'];
+
+$imageName = $currentCategory['image'];
+
+
+
+if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+
+    $target_dir = "../uploads/";
+
+    $file_extension = strtolower(
+        pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
+    );
+
+    $new_file_name = "cat_" . uniqid() . "." . $file_extension;
+
+    $target_file = $target_dir . $new_file_name;
+
+    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+
+        if (!empty($currentCategory['image'])) {
+
+            $oldImagePath = $target_dir . $currentCategory['image'];
+
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
+
+        $imageName = $new_file_name;
+
     } else {
+
         http_response_code(500);
-        echo json_encode(["message" => "Database update failed"]);
+
+        echo json_encode([
+            "message" => "Failed to upload image"
+        ]);
+
+        exit;
     }
+}
+
+
+$updateStmt = $conn->prepare("
+    UPDATE categories 
+    SET 
+        name = ?, 
+        description = ?, 
+        image = ?
+    WHERE category_id = ?
+");
+
+$updateStmt->bind_param(
+    "sssi",
+    $name,
+    $description,
+    $imageName,
+    $category_id
+);
+
+if ($updateStmt->execute()) {
+
+    echo json_encode([
+        "status" => "success",
+        "message" => "Category updated successfully",
+        "data" => [
+            "category_id" => $category_id,
+            "name" => $name,
+            "description" => $description,
+            "image" => $imageName
+        ]
+    ]);
+
 } else {
+
     http_response_code(500);
-    echo json_encode(["message" => "Failed to save image to folder"]);
+
+    echo json_encode([
+        "message" => "Database update failed"
+    ]);
 }
