@@ -3,6 +3,7 @@ header("Content-Type: application/json; charset=UTF-8");
 
 include __DIR__ . "/../config/session.php";
 include __DIR__ . "/../config/db.php";
+include __DIR__ . "/../config/cors.php";
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -16,16 +17,20 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 try {
-
     $sql = "
-        SELECT 
+        SELECT
             r.review_id,
             r.product_id,
             r.rating,
             r.comment,
             r.image,
-            r.created_at
+            r.created_at,
+            p.name AS product_name,
+            p.category_id,
+            c.name AS category_name
         FROM reviews r
+        JOIN products p ON r.product_id = p.product_id
+        JOIN categories c ON p.category_id = c.category_id
         WHERE r.user_id = ?
         ORDER BY r.created_at DESC
     ";
@@ -43,7 +48,6 @@ try {
     }
 
     $result = $stmt->get_result();
-
     $reviews = [];
 
     while ($row = $result->fetch_assoc()) {
@@ -58,7 +62,6 @@ try {
     ], JSON_PRETTY_PRINT);
 
 } catch (Exception $e) {
-
     http_response_code(500);
     echo json_encode([
         "status" => "error",
