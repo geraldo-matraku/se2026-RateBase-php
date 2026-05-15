@@ -8,25 +8,37 @@ mysqli_report(MYSQLI_REPORT_OFF);
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
-    echo json_encode([
-        "message" => "Unauthorized"
-    ]);
+    echo json_encode(["message" => "Unauthorized"]);
     exit;
 }
 
-if($_SESSION['role'] !== 'admin'){
-    http_response_code(403);
-     echo json_encode([
-    "message" => "Admin Only"
-]);
-exit;
-}
-
-$review_id =$_GET['reviewid'] ?? null;
+$review_id = $_GET['reviewid'] ?? null;
 
 if (!$review_id) {
     http_response_code(400);
     echo json_encode(["message" => "Review ID required"]);
+    exit;
+}
+
+$checkStmt = $conn->prepare("SELECT user_id FROM reviews WHERE review_id = ?");
+$checkStmt->bind_param("i", $review_id);
+$checkStmt->execute();
+$result = $checkStmt->get_result();
+
+if ($result->num_rows === 0) {
+    http_response_code(404);
+    echo json_encode(["message" => "Review not found"]);
+    exit;
+}
+
+$review = $result->fetch_assoc();
+
+$isAdmin = $_SESSION['role'] === 'admin';
+$isOwner = $_SESSION['user_id'] === $review['user_id'];
+
+if (!$isAdmin && !$isOwner) {
+    http_response_code(403);
+    echo json_encode(["message" => "Nuk keni leje per te fshire kete review"]);
     exit;
 }
 
@@ -40,12 +52,8 @@ if ($stmt->execute()) {
         exit;
     }
 
-    echo json_encode([
-        "message" => "Review deleted successfully"
-    ]);
+    echo json_encode(["message" => "Review deleted successfully"]);
 } else {
     http_response_code(500);
-    echo json_encode([
-        "message" => "Delete failed"
-    ]);
+    echo json_encode(["message" => "Delete failed"]);
 }
