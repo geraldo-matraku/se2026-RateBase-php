@@ -15,7 +15,11 @@ $stats['total_categories'] = $res->fetch_assoc()['total'];
 $res = $conn->query("SELECT COUNT(*) as total FROM users");
 $stats['total_users'] = $res->fetch_assoc()['total'];
 
+$res = $conn->query("SELECT COUNT(*) as total FROM reviews");
+$stats['total_reviews'] = $res->fetch_assoc()['total'];
 
+$res = $conn->query("SELECT ROUND(AVG(rating), 1) as average FROM reviews");
+$stats['average_rating'] = $res->fetch_assoc()['average'] ?? 0;
 
 echo json_encode([
     "status" => "success",
