@@ -6,6 +6,11 @@ include __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -25,13 +30,9 @@ if ($_SESSION['role'] !== 'admin') {
     exit;
 }
 
-
-
 $name = $_POST['name'] ?? '';
 $description = $_POST['description'] ?? '';
 $category_id = $_POST['category_id'] ?? 0;
-
-
 
 if (!$name || !$description || !$category_id) {
     http_response_code(400);

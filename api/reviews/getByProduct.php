@@ -3,6 +3,12 @@ include __DIR__ . "/../config/cors.php";
 header("Content-Type: application/json; charset=UTF-8");
 include __DIR__ . "/../config/db.php";
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 $productId = $_GET['product_id'] ?? null;
 
 if (!$productId || !is_numeric($productId)) {

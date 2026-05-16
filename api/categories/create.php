@@ -3,6 +3,12 @@ include __DIR__ . "/../config/db.php";
 include __DIR__ . "/../config/session.php";
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode([
