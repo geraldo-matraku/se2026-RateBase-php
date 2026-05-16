@@ -5,6 +5,12 @@ include __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(["message" => "Unauthorized"]);
@@ -29,7 +35,6 @@ $name        = $_POST['name']        ?? null;
 $description = $_POST['description'] ?? null;
 $category_id = $_POST['category_id'] ?? null;
 
-// Trajto imazhin nese vjen
 $image_path = null;
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
     $upload_dir = __DIR__ . "/../uploads/";

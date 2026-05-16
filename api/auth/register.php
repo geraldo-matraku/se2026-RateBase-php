@@ -5,6 +5,12 @@ include __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
 
 $first_name = $data['first_name'] ?? '';
