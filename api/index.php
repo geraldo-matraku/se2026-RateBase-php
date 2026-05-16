@@ -104,26 +104,11 @@ switch ($uri) {
         require 'categories/getAll.php';
         break;
 
-    case '/products':
-    case '/products/getAll':
-        require "products/getAll.php";
-        break;
-
     case '/products/create':
-        if ($method !== "POST") {
-            http_response_code(405);
-            echo json_encode(["status" => "error", "message" => "Method not allowed"]);
-            break;
-        }
         require "products/create.php";
         break;
 
     case '/categories/create':
-        if ($method !== "POST") {
-            http_response_code(405);
-            echo json_encode(["status" => "error", "message" => "Method not allowed"]);
-            break;
-        }
         require "categories/create.php";
         break;
 
