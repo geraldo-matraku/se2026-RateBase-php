@@ -4,6 +4,12 @@ include __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
 
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 $stats = [];
 
 $res = $conn->query("SELECT COUNT(*) as total FROM products");

@@ -6,6 +6,12 @@ include __DIR__ . "/../config/db.php";
 header("Content-Type: application/json; charset=UTF-8");
 mysqli_report(MYSQLI_REPORT_OFF);
 
+if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+    http_response_code(405);
+    echo json_encode(["message" => "Method not allowed"]);
+    exit;
+}
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(["message" => "Unauthorized"]);
