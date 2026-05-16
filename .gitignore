@@ -1,3 +1,4 @@
 /config/db.php
-api/config/paypal.php
+api/config/paypal.example.php
 api/config/mail.php
+/vendor/

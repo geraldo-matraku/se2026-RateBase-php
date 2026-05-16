@@ -1,4 +1,11 @@
 {
+    "name": "nextf/sistem-vleresimi-produktesh-php",
+    "authors": [
+        {
+            "name": "geraldo-matraku",
+            "email": "geraldomatraku05@gmail.com"
+        }
+    ],
     "require": {
         "phpmailer/phpmailer": "^7.1"
     }

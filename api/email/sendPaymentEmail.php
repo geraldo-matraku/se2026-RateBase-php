@@ -1,12 +1,16 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
-require __DIR__ . "/../../vendor/autoload.php";
+require __DIR__ ."../../../vendor/autoload.php";
 include __DIR__ . "/../config/mail.php";
 
-function sendPaymentEmail($toEmail, $toName, $amount, $currency, $paymentId) {
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+
+
+function sendPaymentEmail(string $toEmail, string $toName, float $amount,string $currency,string $paymentId) {
     $mail = new PHPMailer(true);
 
     try {
