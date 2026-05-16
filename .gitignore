@@ -1,1 +1,3 @@
 /config/db.php
+api/config/paypal.php
+api/config/mail.php
