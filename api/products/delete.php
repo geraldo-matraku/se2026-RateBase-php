@@ -5,6 +5,7 @@ include __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
 
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode([
