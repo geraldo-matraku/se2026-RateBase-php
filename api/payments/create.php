@@ -6,14 +6,19 @@ include __DIR__ . "/../config/paypal.php";
 
 header("Content-Type: application/json");
 
-$data = json_decode(file_get_contents("php://input"), true);
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["message" => "Unauthorized"]);
+    exit;
+}
 
-$user_id = $data["user_id"] ?? 0;
+$data   = json_decode(file_get_contents("php://input"), true);
 $amount = $data["amount"] ?? 0;
+$user_id = $_SESSION['user_id'];
 
-if (!$user_id || !$amount) {
+if (!$amount) {
     http_response_code(400);
-    echo json_encode(["message" => "user_id and amount are required"]);
+    echo json_encode(["message" => "amount is required"]);
     exit;
 }
 
@@ -76,17 +81,17 @@ if (!isset($order["id"])) {
     http_response_code(500);
     echo json_encode([
         "message" => "Failed to create PayPal order",
-        "error" => $order
+        "error"   => $order
     ]);
     exit;
 }
 
 $stmt = $conn->prepare("
-    INSERT INTO payments (user_id, amount, currency, description, status)
-    VALUES (?, ?, 'USD', 'PayPal Payment', 'pending')
+    INSERT INTO payments (user_id, amount, currency, description, status, paypal_order_id)
+    VALUES (?, ?, 'USD', 'PayPal Payment', 'pending', ?)
 ");
 
-$stmt->bind_param("id", $user_id, $amount);
+$stmt->bind_param("ids", $user_id, $amount, $order["id"]);
 
 if (!$stmt->execute()) {
     http_response_code(500);
@@ -97,12 +102,12 @@ if (!$stmt->execute()) {
 echo json_encode([
     "message" => "PayPal order created successfully",
     "payment" => [
-        "payment_id" => $stmt->insert_id,
-        "user_id" => (int)$user_id,
-        "amount" => (float)$amount,
-        "currency" => "USD",
+        "payment_id"  => $stmt->insert_id,
+        "user_id"     => (int) $user_id,
+        "amount"      => (float) $amount,
+        "currency"    => "USD",
         "description" => "PayPal Payment",
-        "status" => "pending"
+        "status"      => "pending"
     ],
     "paypal_order" => $order
 ]);

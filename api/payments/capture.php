@@ -7,9 +7,14 @@ include __DIR__ . "/../email/sendPaymentEmail.php";
 
 header("Content-Type: application/json");
 
-$data = json_decode(file_get_contents("php://input"), true);
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["message" => "Unauthorized"]);
+    exit;
+}
 
-$payment_id = $data["payment_id"] ?? 0;
+$data            = json_decode(file_get_contents("php://input"), true);
+$payment_id      = $data["payment_id"]      ?? 0;
 $paypal_order_id = $data["paypal_order_id"] ?? "";
 
 if (!$payment_id || !$paypal_order_id) {
@@ -55,7 +60,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     "Authorization: Bearer " . $accessToken
 ]);
 
-$response = curl_exec($ch);
+$response      = curl_exec($ch);
 curl_close($ch);
 
 $paypalResponse = json_decode($response, true);
@@ -63,7 +68,7 @@ $paypalResponse = json_decode($response, true);
 if (($paypalResponse["status"] ?? "") !== "COMPLETED") {
     http_response_code(400);
     echo json_encode([
-        "message" => "Payment capture failed",
+        "message"         => "Payment capture failed",
         "paypal_response" => $paypalResponse
     ]);
     exit;
@@ -71,11 +76,11 @@ if (($paypalResponse["status"] ?? "") !== "COMPLETED") {
 
 $stmt = $conn->prepare("
     UPDATE payments
-    SET status = 'completed'
+    SET status = 'completed', paypal_order_id = ?
     WHERE payment_id = ?
 ");
 
-$stmt->bind_param("i", $payment_id);
+$stmt->bind_param("si", $paypal_order_id, $payment_id);
 $stmt->execute();
 
 $stmt = $conn->prepare("
@@ -93,7 +98,7 @@ $stmt = $conn->prepare("
 $stmt->bind_param("i", $payment_id);
 $stmt->execute();
 
-$result = $stmt->get_result();
+$result      = $stmt->get_result();
 $paymentData = $result->fetch_assoc();
 
 $email_sent = false;
@@ -109,8 +114,8 @@ if ($paymentData) {
 }
 
 echo json_encode([
-    "message" => "Payment completed successfully",
-    "payment_id" => (int)$payment_id,
-    "email_sent" => $email_sent,
+    "message"         => "Payment completed successfully",
+    "payment_id"      => (int) $payment_id,
+    "email_sent"      => $email_sent,
     "paypal_response" => $paypalResponse
 ]);
