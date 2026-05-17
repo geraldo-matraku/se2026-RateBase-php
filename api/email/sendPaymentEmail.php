@@ -31,7 +31,6 @@ function sendPaymentEmail(string $toEmail, string $toName, float $amount,string 
             <h2>Payment Confirmation</h2>
             <p>Hello {$toName},</p>
             <p>Your payment was completed successfully.</p>
-            <p><strong>Payment ID:</strong> {$paymentId}</p>
             <p><strong>Amount:</strong> {$amount} {$currency}</p>
             <br>
             <p>Thank you,<br>RateBase Team</p>

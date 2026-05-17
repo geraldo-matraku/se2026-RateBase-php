@@ -5,7 +5,7 @@ include __DIR__ . "/sendPaymentEmail.php";
 header("Content-Type: application/json");
 
 $sent = sendPaymentEmail(
-    "EMAILI KTU@gmail.com",
+    "ratebase2@gmail.com",
     "Test User",
     1.50,
     "USD",
