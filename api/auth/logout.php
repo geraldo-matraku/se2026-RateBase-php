@@ -10,9 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 $_SESSION = [];
 
@@ -31,8 +28,6 @@ if (ini_get("session.use_cookies")) {
 }
 
 session_destroy();
-
-unset($_SESSION);
 
 echo json_encode([
     "message" => "Logout success"

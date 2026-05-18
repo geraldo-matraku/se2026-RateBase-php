@@ -31,88 +31,97 @@ if (!$product_id) {
     exit;
 }
 
-$name        = $_POST['name']        ?? null;
-$description = $_POST['description'] ?? null;
-$category_id = $_POST['category_id'] ?? null;
+$checkStmt = $conn->prepare("
+    SELECT * FROM products 
+    WHERE product_id = ?
+");
+$checkStmt->bind_param("i", $product_id);
+$checkStmt->execute();
+$result = $checkStmt->get_result();
 
-$image_path = null;
-if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $upload_dir = __DIR__ . "/../uploads/";
-    $ext        = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-    $filename   = uniqid('product_', true) . '.' . $ext;
+if ($result->num_rows === 0) {
+    http_response_code(404);
+    echo json_encode(["message" => "Product not found"]);
+    exit;
+}
 
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $upload_dir . $filename)) {
-        $image_path = $filename;
+$currentProduct = $result->fetch_assoc();
+
+$name        = $_POST['name']        ?? $currentProduct['name'];
+$description = $_POST['description'] ?? $currentProduct['description'];
+$category_id = $_POST['category_id'] ?? $currentProduct['category_id'];
+$imageName   = $currentProduct['image']; 
+
+if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+
+    $target_dir    = "../uploads/";
+    $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+    $new_file_name  = "product_" . uniqid() . "." . $file_extension;
+    $target_file    = $target_dir . $new_file_name;
+
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+
+        // Fshi foton e vjetër nëse ekziston
+        if (!empty($currentProduct['image'])) {
+            $oldImagePath = $target_dir . $currentProduct['image'];
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
+
+        $imageName = $new_file_name;
+
+    } else {
+        http_response_code(500);
+        echo json_encode(["message" => "Failed to upload image"]);
+        exit;
     }
 }
 
-$fields = [];
-$params = [];
-$types  = '';
-
-if ($name !== null) {
-    $fields[] = "name = ?";
-    $params[] = $name;
-    $types   .= 's';
-}
-
-if ($description !== null) {
-    $fields[] = "description = ?";
-    $params[] = $description;
-    $types   .= 's';
-}
-
-if ($category_id !== null) {
-    $fields[] = "category_id = ?";
-    $params[] = (int) $category_id;
-    $types   .= 'i';
-}
-
-if ($image_path !== null) {
-    $fields[] = "image = ?";
-    $params[] = $image_path;
-    $types   .= 's';
-}
-
-if (empty($fields)) {
-    http_response_code(400);
-    echo json_encode(["message" => "Nuk u dergua asnje fushe per update"]);
-    exit;
-}
-
-$params[] = (int) $product_id;
-$types   .= 'i';
-
-$sql  = "UPDATE products SET " . implode(", ", $fields) . " WHERE product_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param($types, ...$params);
-
-if (!$stmt->execute()) {
-    http_response_code(500);
-    echo json_encode(["message" => "Update failed"]);
-    exit;
-}
-
-$stmt = $conn->prepare("
-    SELECT 
-        p.product_id,
-        p.name,
-        p.description,
-        p.category_id,
-        p.image,
-        c.name AS category_name
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.category_id
-    WHERE p.product_id = ?
+$updateStmt = $conn->prepare("
+    UPDATE products
+    SET
+        name        = ?,
+        description = ?,
+        category_id = ?,
+        image       = ?
+    WHERE product_id = ?
 ");
 
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
+$updateStmt->bind_param(
+    "ssisi",
+    $name,
+    $description,
+    $category_id,
+    $imageName,
+    $product_id
+);
 
-$result  = $stmt->get_result();
-$product = $result->fetch_assoc();
+if ($updateStmt->execute()) {
 
-echo json_encode([
-    "message" => "Product updated successfully",
-    "product" => $product
-]);
+    $selectStmt = $conn->prepare("
+        SELECT
+            p.product_id,
+            p.name,
+            p.description,
+            p.category_id,
+            p.image,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        WHERE p.product_id = ?
+    ");
+    $selectStmt->bind_param("i", $product_id);
+    $selectStmt->execute();
+    $product = $selectStmt->get_result()->fetch_assoc();
+
+    echo json_encode([
+        "status"  => "success",
+        "message" => "Product updated successfully",
+        "data"    => $product
+    ]);
+
+} else {
+    http_response_code(500);
+    echo json_encode(["message" => "Database update failed"]);
+}

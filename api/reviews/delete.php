@@ -38,9 +38,10 @@ if ($result->num_rows === 0) {
 }
 
 $review = $result->fetch_assoc();
+$checkStmt->close();
 
 $isAdmin = $_SESSION['role'] === 'admin';
-$isOwner = $_SESSION['user_id'] === $review['user_id'];
+$isOwner = (int)$_SESSION['user_id'] === (int)$review['user_id'];
 
 if (!$isAdmin && !$isOwner) {
     http_response_code(403);
@@ -48,18 +49,28 @@ if (!$isAdmin && !$isOwner) {
     exit;
 }
 
-$stmt = $conn->prepare("DELETE FROM reviews WHERE review_id = ?");
-$stmt->bind_param("i", $review_id);
+$conn->begin_transaction();
 
-if ($stmt->execute()) {
-    if ($stmt->affected_rows === 0) {
-        http_response_code(404);
-        echo json_encode(["message" => "Review not found"]);
-        exit;
-    }
+try {
+    $s1 = $conn->prepare("DELETE FROM review_votes WHERE review_id = ?");
+    $s1->bind_param("i", $review_id);
+    $s1->execute();
+    $s1->close();
+
+    $s2 = $conn->prepare("DELETE FROM reviews WHERE review_id = ?");
+    $s2->bind_param("i", $review_id);
+    $s2->execute();
+    $s2->close();
+
+    $conn->commit();
 
     echo json_encode(["message" => "Review deleted successfully"]);
-} else {
+
+} catch (Exception $e) {
+    $conn->rollback();
     http_response_code(500);
-    echo json_encode(["message" => "Delete failed"]);
+    echo json_encode([
+        "message" => "Delete failed",
+        "error"   => $e->getMessage()
+    ]);
 }

@@ -9,8 +9,7 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 
-
-function sendPaymentEmail(string $toEmail, string $toName, float $amount,string $currency,string $paymentId) {
+function sendPaymentEmail(string $toEmail, string $toName, float $amount,string $currency) {
     $mail = new PHPMailer(true);
 
     try {

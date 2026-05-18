@@ -1,5 +1,4 @@
 <?php
-
 include __DIR__ . "/../config/cors.php";
 include __DIR__ . "/../config/db.php";
 

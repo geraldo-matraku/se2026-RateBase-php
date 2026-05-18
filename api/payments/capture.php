@@ -107,7 +107,6 @@ if (function_exists("sendPaymentEmail")) {
         $paymentData["first_name"] . " " . $paymentData["last_name"],
         $paymentData["amount"],
         $paymentData["currency"],
-        $payment_id
     );
 }
 
