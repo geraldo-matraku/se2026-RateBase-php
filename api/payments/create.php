@@ -23,9 +23,6 @@ if ($amount <= 0) {
     exit;
 }
 
-$currency = PADDLE_CURRENCY;
-$description = PADDLE_DESCRIPTION;
-
 
 $paddle_payment_id = "PADDLE_TEST_PENDING";
 
@@ -81,9 +78,5 @@ echo json_encode([
         "description" => $description,
         "paddle_payment_id" => $paddle_payment_id
     ],
-    "paddle" => [
-        "environment" => PADDLE_ENVIRONMENT,
-        "price_id" => PADDLE_PRICE_ID,
-        "client_token" => PADDLE_CLIENT_TOKEN
-    ]
+
 ]);

@@ -9,7 +9,6 @@ $sent = sendPaymentEmail(
     "Test User",
     1.50,
     "USD",
-    1
 );
 
 if ($sent) {
