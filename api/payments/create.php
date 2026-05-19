@@ -23,7 +23,8 @@ if ($amount <= 0) {
     exit;
 }
 
-
+$currency = PADDLE_CURRENCY;
+$description = PADDLE_DESCRIPTION;
 $paddle_payment_id = "PADDLE_TEST_PENDING";
 
 $stmt = $conn->prepare("
