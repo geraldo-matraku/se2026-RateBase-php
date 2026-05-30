@@ -1,35 +1,42 @@
 <?php
 
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+mysqli_report(MYSQLI_REPORT_OFF);
 
-$host = getenv("DB_HOST");
-$user = getenv("DB_USER");
-$password = getenv("DB_PASSWORD");
-$database = getenv("DB_NAME");
-$port = getenv("DB_PORT");
+$host = getenv("APP_DB_HOST");
+$user = getenv("APP_DB_USER");
+$password = getenv("APP_DB_PASSWORD");
+$database = getenv("APP_DB_NAME");
+$port = getenv("APP_DB_PORT");
 
 header("Content-Type: application/json");
 
-try {
-    $conn = mysqli_init();
-    $conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+$conn = mysqli_init();
 
-    $conn->real_connect(
-        $host,
-        $user,
-        $password,
-        $database,
-        (int) $port
-    );
-
-    $conn->set_charset("utf8mb4");
-} catch (Throwable $e) {
+if (!$conn) {
     http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Could not initialize database connection"
+    ]);
+    exit;
+}
 
+$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+$connected = @$conn->real_connect(
+    $host,
+    $user,
+    $password,
+    $database,
+    (int) $port
+);
+
+if (!$connected) {
+    http_response_code(500);
     echo json_encode([
         "status" => "error",
         "message" => "Database connection failed",
-        "details" => $e->getMessage(),
+        "details" => $conn->connect_error,
         "env_check" => [
             "host" => $host ?: "missing",
             "user" => $user ?: "missing",
@@ -37,6 +44,7 @@ try {
             "port" => $port ?: "missing"
         ]
     ]);
-
     exit;
 }
+
+$conn->set_charset("utf8mb4");
