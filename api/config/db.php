@@ -1,26 +1,63 @@
 <?php
 
-$host = getenv("APP_DB_HOST") ?: getenv("MYSQLHOST");
-$user = getenv("APP_DB_USER") ?: getenv("MYSQLUSER");
-$password = getenv("APP_DB_PASSWORD") ?: getenv("MYSQLPASSWORD");
-$database = getenv("APP_DB_NAME") ?: getenv("MYSQLDATABASE");
-$port = getenv("APP_DB_PORT") ?: getenv("MYSQLPORT") ?: 3306;
+mysqli_report(MYSQLI_REPORT_OFF);
 
-$conn = mysqli_init();
+$host = getenv("APP_DB_HOST");
+$user = getenv("APP_DB_USER");
+$password = getenv("APP_DB_PASSWORD");
+$database = getenv("APP_DB_NAME");
+$port = getenv("APP_DB_PORT");
 
-$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+header("Content-Type: application/json");
 
-if (!$conn->real_connect($host, $user, $password, $database, (int)$port)) {
+if (!$host || !$user || !$password || !$database || !$port) {
     http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Gabim gjatë lidhjes me databazën",
+        "message" => "Missing database environment variables",
+        "env_check" => [
+            "host" => $host ?: "missing",
+            "user" => $user ?: "missing",
+            "password" => $password ? "exists" : "missing",
+            "database" => $database ?: "missing",
+            "port" => $port ?: "missing"
+        ]
+    ]);
+    exit;
+}
+
+$conn = mysqli_init();
+
+if (!$conn) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Could not initialize database connection"
+    ]);
+    exit;
+}
+
+$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+$connected = @$conn->real_connect(
+    $host,
+    $user,
+    $password,
+    $database,
+    (int) $port
+);
+
+if (!$connected) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database connection failed",
         "details" => $conn->connect_error,
         "env_check" => [
-            "host" => $host ? "exists" : "missing",
-            "user" => $user ? "exists" : "missing",
-            "database" => $database ? "exists" : "missing",
-            "port" => $port ?: "missing"
+            "host" => $host,
+            "user" => $user,
+            "database" => $database,
+            "port" => $port
         ]
     ]);
     exit;
