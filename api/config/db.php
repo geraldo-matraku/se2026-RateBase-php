@@ -1,29 +1,42 @@
 <?php
 
-$host = getenv("DB_HOST") ?: getenv("MYSQLHOST");
-$user = getenv("DB_USER") ?: getenv("MYSQLUSER");
-$password = getenv("DB_PASSWORD") ?: getenv("MYSQLPASSWORD");
-$database = getenv("DB_NAME") ?: getenv("MYSQLDATABASE");
-$port = getenv("DB_PORT") ?: getenv("MYSQLPORT") ?: 3306;
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$conn = mysqli_init();
+$host = getenv("DB_HOST");
+$user = getenv("DB_USER");
+$password = getenv("DB_PASSWORD");
+$database = getenv("DB_NAME");
+$port = getenv("DB_PORT");
 
-$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+header("Content-Type: application/json");
 
-if (!$conn->real_connect($host, $user, $password, $database, (int)$port)) {
+try {
+    $conn = mysqli_init();
+    $conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+    $conn->real_connect(
+        $host,
+        $user,
+        $password,
+        $database,
+        (int) $port
+    );
+
+    $conn->set_charset("utf8mb4");
+} catch (Throwable $e) {
     http_response_code(500);
+
     echo json_encode([
         "status" => "error",
-        "message" => "Gabim gjatë lidhjes me databazën",
-        "details" => $conn->connect_error,
+        "message" => "Database connection failed",
+        "details" => $e->getMessage(),
         "env_check" => [
-            "host" => $host ? "exists" : "missing",
-            "user" => $user ? "exists" : "missing",
-            "database" => $database ? "exists" : "missing",
+            "host" => $host ?: "missing",
+            "user" => $user ?: "missing",
+            "database" => $database ?: "missing",
             "port" => $port ?: "missing"
         ]
     ]);
+
     exit;
 }
-
-$conn->set_charset("utf8mb4");
