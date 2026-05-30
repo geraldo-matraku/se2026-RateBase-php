@@ -1,14 +1,17 @@
 <?php
+$host = isset($_ENV['DB_HOST']) ? trim($_ENV['DB_HOST']) : '';
+$user = isset($_ENV['DB_USER']) ? trim($_ENV['DB_USER']) : '';
+$pass = isset($_ENV['DB_PASS']) ? trim($_ENV['DB_PASS']) : '';
+$name = isset($_ENV['DB_NAME']) ? trim($_ENV['DB_NAME']) : '';
+$port = isset($_ENV['DB_PORT']) ? intval(trim($_ENV['DB_PORT'])) : 3306;
 
-// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../../");
-// $dotenv->load();
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$conn = new mysqli($_ENV['DB_HOST'], $_ENV['DB_USER'], $_ENV['DB_PASS'], $_ENV['DB_NAME']);
-
-if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode(["message" => "DB connection failed"]);
+try {
+    $conn = new mysqli($host, $user, $pass, $name, $port);
+} catch (Exception $e) {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "Gabim gjatë lidhjes me databazën:\n";
+    echo $e->getMessage();
     exit;
 }
-?>
-
