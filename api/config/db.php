@@ -1,10 +1,9 @@
 <?php
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "sistem_vleresimi_produktesh";
 
-$conn = new mysqli($host, $user, $pass, $db);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../../");
+$dotenv->load();
+
+$conn = new mysqli($_ENV['DB_HOST'], $_ENV['DB_USER'], $_ENV['DB_PASS'], $_ENV['DB_NAME']);
 
 if ($conn->connect_error) {
     http_response_code(500);
@@ -12,3 +11,4 @@ if ($conn->connect_error) {
     exit;
 }
 ?>
+
