@@ -1,17 +1,29 @@
 <?php
-$host = isset($_ENV['DB_HOST']) ? trim($_ENV['DB_HOST']) : '';
-$user = isset($_ENV['DB_USER']) ? trim($_ENV['DB_USER']) : '';
-$pass = isset($_ENV['DB_PASS']) ? trim($_ENV['DB_PASS']) : '';
-$name = isset($_ENV['DB_NAME']) ? trim($_ENV['DB_NAME']) : '';
-$port = isset($_ENV['DB_PORT']) ? intval(trim($_ENV['DB_PORT'])) : 3306;
 
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$host = getenv("DB_HOST") ?: getenv("MYSQLHOST");
+$user = getenv("DB_USER") ?: getenv("MYSQLUSER");
+$password = getenv("DB_PASSWORD") ?: getenv("MYSQLPASSWORD");
+$database = getenv("DB_NAME") ?: getenv("MYSQLDATABASE");
+$port = getenv("DB_PORT") ?: getenv("MYSQLPORT") ?: 3306;
 
-try {
-    $conn = new mysqli($host, $user, $pass, $name, $port);
-} catch (Exception $e) {
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "Gabim gjatë lidhjes me databazën:\n";
-    echo $e->getMessage();
+$conn = mysqli_init();
+
+$conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+
+if (!$conn->real_connect($host, $user, $password, $database, (int)$port)) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Gabim gjatë lidhjes me databazën",
+        "details" => $conn->connect_error,
+        "env_check" => [
+            "host" => $host ? "exists" : "missing",
+            "user" => $user ? "exists" : "missing",
+            "database" => $database ? "exists" : "missing",
+            "port" => $port ?: "missing"
+        ]
+    ]);
     exit;
 }
+
+$conn->set_charset("utf8mb4");
