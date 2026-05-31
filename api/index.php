@@ -4,13 +4,21 @@ include "config/cors.php";
 header("Content-Type: application/json");
 
 
-$uri = $_SERVER['REQUEST_URI'];
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
-$uri = strtok($uri, '?');
 $base_path = "/sistem-vleresimi-produktesh-php/api";
 $uri = str_replace($base_path, "", $uri);
+
+if (strpos($uri, "/api") === 0) {
+    $uri = substr($uri, 4);
+}
+
 $uri = rtrim($uri, "/");
+
+if ($uri === "") {
+    $uri = "/";
+}
 
 if ($uri == "" || $uri == "/") {
     header("Content-Type: application/json");
